@@ -1,0 +1,32 @@
+{
+	"name": "Monster Kill Counter",
+	"short_name": "Monster Counter",
+	"description": "A simple counter for tracking monster kills",
+	"start_url": "./monster-counter.html",
+	"display": "standalone",
+	"background_color": "#1a1a1a",
+	"theme_color": "#2a7f62",
+	"orientation": "portrait-primary",
+	"icons": [
+		{
+			"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%231a1a1a' width='192' height='192'/><circle cx='96' cy='96' r='80' fill='%232a7f62'/><text x='96' y='112' font-size='64' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>⚔</text></svg>",
+			"sizes": "192x192",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		},
+		{
+			"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%231a1a1a' width='512' height='512'/><circle cx='256' cy='256' r='200' fill='%232a7f62'/><text x='256' y='280' font-size='160' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>⚔</text></svg>",
+			"sizes": "512x512",
+			"type": "image/svg+xml",
+			"purpose": "any maskable"
+		}
+	],
+	"screenshots": [
+		{
+			"src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%231a1a1a' width='540' height='720'/><text x='30' y='60' font-size='24' font-weight='bold' fill='%23888'>−1</text><text x='270' y='240' font-size='20' font-weight='600' fill='%23888' text-anchor='middle'>MONSTERS KILLED</text><text x='270' y='340' font-size='96' font-weight='bold' fill='white' text-anchor='middle'>127</text><circle cx='270' cy='520' r='110' fill='%232a7f62'/><text x='270' y='540' font-size='42' font-weight='bold' fill='white' text-anchor='middle'>TAP</text><text x='270' y='680' font-size='16' font-weight='600' fill='white' text-anchor='middle'>RESET</text></svg>",
+			"sizes": "540x720",
+			"type": "image/svg+xml",
+			"form_factor": "narrow"
+		}
+	]
+}

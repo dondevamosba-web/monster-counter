@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+	<title>Monster Counter</title>
+	<meta name="theme-color" content="#1a1a1a">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="Monster Counter">
+	<link rel="manifest" href="manifest.json">
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			-webkit-tap-highlight-color: transparent;
+			-webkit-user-select: none;
+			user-select: none;
+		}
+
+		body {
+			background: #1a1a1a;
+			color: #fff;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			overflow: hidden;
+			width: 100%;
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			position: fixed;
+			top: 0;
+			left: 0;
+		}
+
+		.container {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			height: 100%;
+			padding: 20px;
+			padding-top: max(20px, env(safe-area-inset-top));
+			padding-bottom: max(20px, env(safe-area-inset-bottom));
+		}
+
+		.header {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			width: 100%;
+			gap: 16px;
+		}
+
+		.header-left {
+			flex-shrink: 0;
+		}
+
+		.header-right {
+			display: flex;
+			gap: 16px;
+			flex: 1;
+			justify-content: flex-end;
+		}
+
+		.mini-counter {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.mini-label {
+			font-size: 10px;
+			letter-spacing: 1px;
+			font-weight: 600;
+			color: #666;
+			text-transform: uppercase;
+			white-space: nowrap;
+		}
+
+		.mini-count {
+			font-size: 18px;
+			font-weight: 700;
+			color: #fff;
+			min-width: 32px;
+			text-align: center;
+		}
+
+		.mini-buttons {
+			display: flex;
+			gap: 4px;
+		}
+
+		.mini-btn {
+			background: #333;
+			border: none;
+			color: #fff;
+			font-size: 12px;
+			font-weight: 600;
+			width: 24px;
+			height: 24px;
+			border-radius: 4px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.1s ease;
+		}
+
+		.mini-btn:active {
+			background: #444;
+			transform: scale(0.9);
+		}
+
+		.decrement-btn {
+			background: #333;
+			border: none;
+			color: #fff;
+			font-size: 28px;
+			font-weight: 600;
+			width: 50px;
+			height: 50px;
+			border-radius: 8px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.1s ease;
+			active-opacity: 0.8;
+		}
+
+		.decrement-btn:active {
+			background: #444;
+			transform: scale(0.95);
+		}
+
+		.counter-display {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			gap: 16px;
+		}
+
+		.label {
+			font-size: 14px;
+			letter-spacing: 2px;
+			font-weight: 600;
+			color: #888;
+			text-transform: uppercase;
+		}
+
+		.count {
+			font-size: 96px;
+			font-weight: 700;
+			line-height: 1;
+			color: #fff;
+		}
+
+		.main-button-container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.main-btn {
+			width: 220px;
+			height: 220px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, #2a7f62 0%, #1d5a47 100%);
+			border: none;
+			color: #fff;
+			font-size: 42px;
+			font-weight: 700;
+			cursor: pointer;
+			transition: all 0.05s ease;
+			box-shadow: 0 8px 24px rgba(42, 127, 98, 0.3);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			letter-spacing: 1px;
+		}
+
+		.main-btn:active {
+			transform: scale(0.95);
+			box-shadow: 0 4px 12px rgba(42, 127, 98, 0.4);
+		}
+
+		.main-btn:disabled {
+			opacity: 0.5;
+		}
+
+		.footer {
+			display: flex;
+			gap: 16px;
+		}
+
+		.reset-btn {
+			background: #333;
+			border: none;
+			color: #fff;
+			font-size: 16px;
+			font-weight: 600;
+			padding: 12px 32px;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: all 0.1s ease;
+			letter-spacing: 1px;
+		}
+
+		.reset-btn:active {
+			background: #444;
+			transform: scale(0.95);
+		}
+
+		/* Modal Styles */
+		.modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.7);
+			display: none;
+			align-items: center;
+			justify-content: center;
+			z-index: 1000;
+		}
+
+		.modal-overlay.active {
+			display: flex;
+		}
+
+		.modal {
+			background: #2a2a2a;
+			border-radius: 16px;
+			padding: 32px 24px;
+			text-align: center;
+			max-width: 300px;
+			animation: slideUp 0.2s ease;
+		}
+
+		@keyframes slideUp {
+			from {
+				transform: translateY(20px);
+				opacity: 0;
+			}
+			to {
+				transform: translateY(0);
+				opacity: 1;
+			}
+		}
+
+		.modal-title {
+			font-size: 18px;
+			font-weight: 600;
+			margin-bottom: 24px;
+			color: #fff;
+		}
+
+		.modal-buttons {
+			display: flex;
+			gap: 12px;
+			justify-content: center;
+		}
+
+		.modal-btn {
+			flex: 1;
+			padding: 12px 24px;
+			border: none;
+			border-radius: 8px;
+			font-size: 16px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.1s ease;
+		}
+
+		.modal-btn.cancel {
+			background: #444;
+			color: #fff;
+		}
+
+		.modal-btn.cancel:active {
+			background: #555;
+			transform: scale(0.95);
+		}
+
+		.modal-btn.confirm {
+			background: #d32f2f;
+			color: #fff;
+		}
+
+		.modal-btn.confirm:active {
+			background: #b71c1c;
+			transform: scale(0.95);
+		}
+
+		/* Prevent double-tap zoom */
+		@media (pointer: coarse) {
+			body {
+				touch-action: manipulation;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<div class="header-left">
+				<button class="decrement-btn" id="decrementBtn" aria-label="Decrease count by 1">−1</button>
+			</div>
+			<div class="header-right">
+				<div class="mini-counter">
+					<div class="mini-label">Epic Drops</div>
+					<div class="mini-count" id="epicsCount">0</div>
+					<div class="mini-buttons">
+						<button class="mini-btn" id="epicsMinusBtn">−</button>
+						<button class="mini-btn" id="epicsPlusBtn">+</button>
+					</div>
+				</div>
+				<div class="mini-counter">
+					<div class="mini-label">Coins</div>
+					<div class="mini-count" id="coinsCount">0</div>
+					<div class="mini-buttons">
+						<button class="mini-btn" id="coinsMinusBtn">−</button>
+						<button class="mini-btn" id="coinsPlusBtn">+</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="counter-display">
+			<div class="label">Monsters Killed</div>
+			<div class="count" id="counter">0</div>
+		</div>
+
+		<div class="main-button-container">
+			<button class="main-btn" id="mainBtn" aria-label="Increase count by 1">TAP</button>
+		</div>
+
+		<div class="footer">
+			<button class="reset-btn" id="resetBtn">RESET</button>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="resetModal">
+		<div class="modal">
+			<div class="modal-title">Reset monster count?</div>
+			<div class="modal-buttons">
+				<button class="modal-btn cancel" id="cancelBtn">Cancel</button>
+				<button class="modal-btn confirm" id="confirmResetBtn">Reset</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		const STORAGE_KEY_MONSTERS = 'monsterCount';
+		const STORAGE_KEY_EPICS = 'epicsCount';
+		const STORAGE_KEY_COINS = 'coinsCount';
+		const DEFAULT_COUNT = 0;
+
+		let count = loadCount(STORAGE_KEY_MONSTERS);
+		let epics = loadCount(STORAGE_KEY_EPICS);
+		let coins = loadCount(STORAGE_KEY_COINS);
+
+		const counterDisplay = document.getElementById('counter');
+		const epicsDisplay = document.getElementById('epicsCount');
+		const coinsDisplay = document.getElementById('coinsCount');
+		const mainBtn = document.getElementById('mainBtn');
+		const decrementBtn = document.getElementById('decrementBtn');
+		const epicsPlusBtn = document.getElementById('epicsPlusBtn');
+		const epicsMinusBtn = document.getElementById('epicsMinusBtn');
+		const coinsPlusBtn = document.getElementById('coinsPlusBtn');
+		const coinsMinusBtn = document.getElementById('coinsMinusBtn');
+		const resetBtn = document.getElementById('resetBtn');
+		const resetModal = document.getElementById('resetModal');
+		const cancelBtn = document.getElementById('cancelBtn');
+		const confirmResetBtn = document.getElementById('confirmResetBtn');
+
+		function loadCount(key) {
+			const stored = localStorage.getItem(key);
+			return stored !== null ? parseInt(stored, 10) : DEFAULT_COUNT;
+		}
+
+		function saveCount(key, value) {
+			localStorage.setItem(key, value.toString());
+		}
+
+		function updateDisplay() {
+			counterDisplay.textContent = count;
+			epicsDisplay.textContent = epics;
+			coinsDisplay.textContent = coins;
+		}
+
+		function incrementMonsters() {
+			count++;
+			saveCount(STORAGE_KEY_MONSTERS, count);
+			updateDisplay();
+		}
+
+		function decrementMonsters() {
+			if (count > 0) {
+				count--;
+				saveCount(STORAGE_KEY_MONSTERS, count);
+				updateDisplay();
+			}
+		}
+
+		function incrementEpics() {
+			epics++;
+			saveCount(STORAGE_KEY_EPICS, epics);
+			updateDisplay();
+		}
+
+		function decrementEpics() {
+			if (epics > 0) {
+				epics--;
+				saveCount(STORAGE_KEY_EPICS, epics);
+				updateDisplay();
+			}
+		}
+
+		function incrementCoins() {
+			coins++;
+			saveCount(STORAGE_KEY_COINS, coins);
+			updateDisplay();
+		}
+
+		function decrementCoins() {
+			if (coins > 0) {
+				coins--;
+				saveCount(STORAGE_KEY_COINS, coins);
+				updateDisplay();
+			}
+		}
+
+		function openResetModal() {
+			resetModal.classList.add('active');
+		}
+
+		function closeResetModal() {
+			resetModal.classList.remove('active');
+		}
+
+		function performReset() {
+			count = 0;
+			saveCount(STORAGE_KEY_MONSTERS, count);
+			updateDisplay();
+			closeResetModal();
+		}
+
+		mainBtn.addEventListener('click', incrementMonsters);
+		decrementBtn.addEventListener('click', decrementMonsters);
+		epicsPlusBtn.addEventListener('click', incrementEpics);
+		epicsMinusBtn.addEventListener('click', decrementEpics);
+		coinsPlusBtn.addEventListener('click', incrementCoins);
+		coinsMinusBtn.addEventListener('click', decrementCoins);
+		resetBtn.addEventListener('click', openResetModal);
+		cancelBtn.addEventListener('click', closeResetModal);
+		confirmResetBtn.addEventListener('click', performReset);
+
+		// Close modal when clicking outside
+		resetModal.addEventListener('click', function (e) {
+			if (e.target === resetModal) {
+				closeResetModal();
+			}
+		});
+
+		// Initialize display
+		updateDisplay();
+
+		// Disable scrolling and zooming
+		document.addEventListener('touchmove', function (e) {
+			if (e.target === document.body) {
+				e.preventDefault();
+			}
+		}, { passive: false });
+
+		// Prevent accidental text selection on repeated taps
+		document.addEventListener('touchstart', function (e) {
+			if (e.touches.length > 1) {
+				e.preventDefault();
+			}
+		}, { passive: false });
+	</script>
+</body>
+</html>
