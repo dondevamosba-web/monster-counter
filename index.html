@@ -218,6 +218,14 @@
 			transform: scale(0.95);
 		}
 
+		.new-session-btn {
+			background: #1a5c3f;
+		}
+
+		.new-session-btn:active {
+			background: #0d3a25;
+		}
+
 		/* Modal Styles */
 		.modal-overlay {
 			position: fixed;
@@ -345,6 +353,7 @@
 
 		<div class="footer">
 			<button class="reset-btn" id="resetBtn">RESET</button>
+			<button class="reset-btn new-session-btn" id="newSessionBtn">NEW SESSION</button>
 		</div>
 	</div>
 
@@ -358,10 +367,29 @@
 		</div>
 	</div>
 
+	<div class="modal-overlay" id="newSessionModal">
+		<div class="modal">
+			<div class="modal-title">Start New Session?</div>
+			<div style="text-align: left; margin: 20px 0; font-size: 13px; color: #aaa;">
+				<div style="margin-bottom: 10px;"><strong>Last Session:</strong></div>
+				<div>⚔ Monsters: <span id="lastMonsters">0</span></div>
+				<div>✨ Epic Drops: <span id="lastEpics">0</span></div>
+				<div>💰 Coins: <span id="lastCoins">0</span></div>
+			</div>
+			<div class="modal-buttons">
+				<button class="modal-btn cancel" id="cancelNewSessionBtn">Cancel</button>
+				<button class="modal-btn confirm" id="confirmNewSessionBtn">New Session</button>
+			</div>
+		</div>
+	</div>
+
 	<script>
 		const STORAGE_KEY_MONSTERS = 'monsterCount';
 		const STORAGE_KEY_EPICS = 'epicsCount';
 		const STORAGE_KEY_COINS = 'coinsCount';
+		const STORAGE_KEY_LAST_MONSTERS = 'lastMonsters';
+		const STORAGE_KEY_LAST_EPICS = 'lastEpics';
+		const STORAGE_KEY_LAST_COINS = 'lastCoins';
 		const DEFAULT_COUNT = 0;
 
 		let count = loadCount(STORAGE_KEY_MONSTERS);
@@ -378,9 +406,13 @@
 		const coinsPlusBtn = document.getElementById('coinsPlusBtn');
 		const coinsMinusBtn = document.getElementById('coinsMinusBtn');
 		const resetBtn = document.getElementById('resetBtn');
+		const newSessionBtn = document.getElementById('newSessionBtn');
 		const resetModal = document.getElementById('resetModal');
+		const newSessionModal = document.getElementById('newSessionModal');
 		const cancelBtn = document.getElementById('cancelBtn');
 		const confirmResetBtn = document.getElementById('confirmResetBtn');
+		const cancelNewSessionBtn = document.getElementById('cancelNewSessionBtn');
+		const confirmNewSessionBtn = document.getElementById('confirmNewSessionBtn');
 
 		function loadCount(key) {
 			const stored = localStorage.getItem(key);
@@ -454,6 +486,31 @@
 			closeResetModal();
 		}
 
+		function openNewSessionModal() {
+			document.getElementById('lastMonsters').textContent = count;
+			document.getElementById('lastEpics').textContent = epics;
+			document.getElementById('lastCoins').textContent = coins;
+			newSessionModal.classList.add('active');
+		}
+
+		function closeNewSessionModal() {
+			newSessionModal.classList.remove('active');
+		}
+
+		function performNewSession() {
+			saveCount(STORAGE_KEY_LAST_MONSTERS, count);
+			saveCount(STORAGE_KEY_LAST_EPICS, epics);
+			saveCount(STORAGE_KEY_LAST_COINS, coins);
+			count = 0;
+			epics = 0;
+			coins = 0;
+			saveCount(STORAGE_KEY_MONSTERS, count);
+			saveCount(STORAGE_KEY_EPICS, epics);
+			saveCount(STORAGE_KEY_COINS, coins);
+			updateDisplay();
+			closeNewSessionModal();
+		}
+
 		mainBtn.addEventListener('click', incrementMonsters);
 		decrementBtn.addEventListener('click', decrementMonsters);
 		epicsPlusBtn.addEventListener('click', incrementEpics);
@@ -461,13 +518,22 @@
 		coinsPlusBtn.addEventListener('click', incrementCoins);
 		coinsMinusBtn.addEventListener('click', decrementCoins);
 		resetBtn.addEventListener('click', openResetModal);
+		newSessionBtn.addEventListener('click', openNewSessionModal);
 		cancelBtn.addEventListener('click', closeResetModal);
 		confirmResetBtn.addEventListener('click', performReset);
+		cancelNewSessionBtn.addEventListener('click', closeNewSessionModal);
+		confirmNewSessionBtn.addEventListener('click', performNewSession);
 
-		// Close modal when clicking outside
+		// Close modals when clicking outside
 		resetModal.addEventListener('click', function (e) {
 			if (e.target === resetModal) {
 				closeResetModal();
+			}
+		});
+
+		newSessionModal.addEventListener('click', function (e) {
+			if (e.target === newSessionModal) {
+				closeNewSessionModal();
 			}
 		});
 
