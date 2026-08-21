@@ -719,6 +719,7 @@
 		const STORAGE_KEY_START_TIME = 'killStartTime';
 		const STORAGE_KEY_PAUSED = 'sessionPaused';
 		const STORAGE_KEY_PAUSE_STARTED = 'pauseStartedAt';
+		const STORAGE_KEY_LAST_ACTIVITY = 'lastActivityAt';
 		const STORAGE_KEY_KILL_TIMESTAMPS = 'killTimestamps';
 		const AUTO_PAUSE_MS = 2 * 60 * 1000;
 		const RATE_WINDOWS_MIN = [5, 10, 15, 30, 45, 60];
@@ -738,6 +739,13 @@
 		let startTime = loadTime(STORAGE_KEY_START_TIME);
 		let isPaused = localStorage.getItem(STORAGE_KEY_PAUSED) === '1';
 		let pauseStartedAt = loadTime(STORAGE_KEY_PAUSE_STARTED);
+		let lastActivityAt = loadTime(STORAGE_KEY_LAST_ACTIVITY);
+		if (startTime !== null && count > 0 && lastActivityAt === null) {
+			// Migrate sessions that predate activity tracking: give them a fresh grace period
+			// instead of assuming they've already been idle.
+			lastActivityAt = Date.now();
+			saveTime(STORAGE_KEY_LAST_ACTIVITY, lastActivityAt);
+		}
 		let killTimestamps = loadTimestamps();
 		let tickHandle = null;
 
@@ -855,8 +863,8 @@
 			updateRates();
 
 			if (!isPaused && startTime !== null && count >= 1) {
-				const lastTap = killTimestamps.length ? killTimestamps[killTimestamps.length - 1] : startTime;
-				if (Date.now() - lastTap >= AUTO_PAUSE_MS) {
+				const reference = lastActivityAt !== null ? lastActivityAt : startTime;
+				if (Date.now() - reference >= AUTO_PAUSE_MS) {
 					pauseSession();
 				}
 			}
@@ -910,6 +918,8 @@
 			pauseStartedAt = null;
 			localStorage.setItem(STORAGE_KEY_PAUSED, '0');
 			saveTime(STORAGE_KEY_PAUSE_STARTED, null);
+			lastActivityAt = Date.now();
+			saveTime(STORAGE_KEY_LAST_ACTIVITY, lastActivityAt);
 			startTicking();
 			updateStats();
 		}
@@ -947,6 +957,8 @@
 			killTimestamps.push(Date.now());
 			trimTimestamps();
 			saveTimestamps();
+			lastActivityAt = Date.now();
+			saveTime(STORAGE_KEY_LAST_ACTIVITY, lastActivityAt);
 			updateDisplay();
 		}
 
@@ -963,6 +975,8 @@
 					pauseStartedAt = null;
 					localStorage.setItem(STORAGE_KEY_PAUSED, '0');
 					saveTime(STORAGE_KEY_PAUSE_STARTED, null);
+					lastActivityAt = null;
+					saveTime(STORAGE_KEY_LAST_ACTIVITY, null);
 					stopTicking();
 				}
 				updateDisplay();
@@ -1024,11 +1038,13 @@
 			startTime = null;
 			isPaused = false;
 			pauseStartedAt = null;
+			lastActivityAt = null;
 			killTimestamps = [];
 			saveCount(STORAGE_KEY_MONSTERS, count);
 			saveTime(STORAGE_KEY_START_TIME, null);
 			localStorage.setItem(STORAGE_KEY_PAUSED, '0');
 			saveTime(STORAGE_KEY_PAUSE_STARTED, null);
+			saveTime(STORAGE_KEY_LAST_ACTIVITY, null);
 			saveTimestamps();
 			stopTicking();
 			updateDisplay();
@@ -1067,6 +1083,7 @@
 			startTime = null;
 			isPaused = false;
 			pauseStartedAt = null;
+			lastActivityAt = null;
 			killTimestamps = [];
 			saveCount(STORAGE_KEY_MONSTERS, count);
 			saveCount(STORAGE_KEY_EPICS, epics);
@@ -1075,6 +1092,7 @@
 			saveTime(STORAGE_KEY_START_TIME, null);
 			localStorage.setItem(STORAGE_KEY_PAUSED, '0');
 			saveTime(STORAGE_KEY_PAUSE_STARTED, null);
+			saveTime(STORAGE_KEY_LAST_ACTIVITY, null);
 			saveTimestamps();
 			stopTicking();
 			updateDisplay();
