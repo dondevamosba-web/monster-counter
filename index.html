@@ -905,7 +905,7 @@
 
 		function incrementMonsters() {
 			if (isPaused) return;
-			if (count === 0) {
+			if (startTime === null) {
 				startTime = Date.now();
 				saveTime(STORAGE_KEY_START_TIME, startTime);
 				startTicking();
