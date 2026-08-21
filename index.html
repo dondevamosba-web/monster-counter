@@ -34,6 +34,8 @@
 			--danger: #d32f2f;
 			--danger-active: #b71c1c;
 			--timer: #d4a72c;
+			--pause: #8a6d1a;
+			--pause-active: #6b5314;
 		}
 
 		html, body {
@@ -291,19 +293,31 @@
 			box-shadow: 0 4px 12px var(--accent-glow);
 		}
 
+		.main-btn:disabled {
+			opacity: 0.5;
+		}
+
+		.timer-display.paused {
+			color: var(--pause);
+		}
+
 		.footer {
 			display: flex;
-			gap: 16px;
+			flex-wrap: wrap;
+			gap: 12px;
+			justify-content: center;
 		}
 
 		.reset-btn {
+			flex: 1 1 0;
+			min-width: 100px;
 			background: var(--btn);
 			border: none;
 			color: var(--text);
 			font-size: 16px;
 			font-weight: 600;
-			padding: 12px 32px;
-			border-radius: 8px;
+			padding: 14px 20px;
+			border-radius: 10px;
 			cursor: pointer;
 			transition: all 0.1s ease;
 			letter-spacing: 1px;
@@ -314,11 +328,32 @@
 			transform: scale(0.95);
 		}
 
+		.reset-btn:disabled {
+			opacity: 0.4;
+			cursor: default;
+		}
+
 		.new-session-btn {
 			background: var(--session);
 		}
 
 		.new-session-btn:active {
+			background: var(--session-active);
+		}
+
+		.pause-btn {
+			background: var(--pause);
+		}
+
+		.pause-btn:active {
+			background: var(--pause-active);
+		}
+
+		.pause-btn.active {
+			background: var(--session);
+		}
+
+		.pause-btn.active:active {
 			background: var(--session-active);
 		}
 
@@ -437,95 +472,112 @@
 		/* Mobile optimizations */
 		@media (max-width: 480px) {
 			.container {
-				padding: 10px;
-				padding-top: max(10px, env(safe-area-inset-top));
-				padding-bottom: max(10px, env(safe-area-inset-bottom));
-				justify-content: flex-start;
-				gap: 10px;
+				padding: 14px;
+				padding-top: max(14px, env(safe-area-inset-top));
+				padding-bottom: max(14px, env(safe-area-inset-bottom));
+				justify-content: space-evenly;
+				gap: 16px;
 			}
 
 			.header {
 				margin-top: 4px;
 			}
 
+			.decrement-btn {
+				width: 56px;
+				height: 56px;
+				font-size: 30px;
+			}
+
 			.resource-row {
-				gap: 6px;
+				gap: 8px;
+			}
+
+			.mini-counter {
+				padding: 14px 6px;
 			}
 
 			.counter-display {
-				gap: 6px;
+				gap: 12px;
 			}
 
 			.label {
-				font-size: 11px;
+				font-size: 13px;
 			}
 
 			.count {
-				font-size: 40px;
+				font-size: 58px;
 			}
 
 			.stats-row {
 				max-width: 100%;
+				gap: 14px;
 			}
 
 			.stat {
-				padding: 6px 6px;
+				padding: 12px 8px;
 			}
 
 			.stat-value {
-				font-size: 20px;
+				font-size: 26px;
 			}
 
 			.stat-value.idle {
-				font-size: 15px;
+				font-size: 18px;
 			}
 
 			.rate-row {
 				max-width: 100%;
-				gap: 5px 6px;
+				gap: 8px 10px;
 			}
 
 			.rate-stat {
-				padding: 5px 3px;
+				padding: 8px 4px;
+			}
+
+			.rate-value {
+				font-size: 21px;
 			}
 
 			.main-btn {
-				width: 130px;
-				height: 130px;
-				font-size: 24px;
+				width: 175px;
+				height: 175px;
+				font-size: 32px;
 			}
 
 			.mini-label {
-				font-size: 10px;
+				font-size: 11px;
 			}
 
 			.mini-count {
-				font-size: 28px;
+				font-size: 34px;
 				min-width: 32px;
 			}
 
 			.mini-btn {
-				width: 26px;
-				height: 26px;
-				font-size: 13px;
+				width: 30px;
+				height: 30px;
+				font-size: 15px;
 			}
 
 			.footer {
-				gap: 8px;
+				gap: 10px;
 				margin-top: 4px;
+				width: 100%;
 			}
 
 			.reset-btn {
-				padding: 9px 16px;
-				font-size: 12px;
+				padding: 14px 16px;
+				font-size: 14px;
 			}
 		}
 
 		@media (max-height: 700px) {
-			.stat-value { font-size: 18px; }
-			.main-btn { width: 115px; height: 115px; font-size: 22px; }
-			.count { font-size: 34px; }
-			.mini-count { font-size: 24px; }
+			.container { justify-content: flex-start; gap: 10px; }
+			.stat-value { font-size: 20px; }
+			.main-btn { width: 135px; height: 135px; font-size: 26px; }
+			.count { font-size: 42px; }
+			.mini-count { font-size: 26px; }
 		}
 	</style>
 </head>
@@ -570,7 +622,7 @@
 			<div class="stats-row">
 				<div class="stat">
 					<div class="stat-label">Timer</div>
-					<div class="stat-value idle" id="timerDisplay">Ready</div>
+					<div class="stat-value idle timer-display" id="timerDisplay">Ready</div>
 				</div>
 				<div class="stat">
 					<div class="stat-label">Avg Kill Time</div>
@@ -610,6 +662,7 @@
 		</div>
 
 		<div class="footer">
+			<button class="reset-btn pause-btn" id="pauseBtn">PAUSE</button>
 			<button class="reset-btn" id="resetBtn">RESET</button>
 			<button class="reset-btn new-session-btn" id="newSessionBtn">NEW SESSION</button>
 		</div>
@@ -650,6 +703,8 @@
 		const STORAGE_KEY_COINS = 'coinsCount';
 		const STORAGE_KEY_COMMONS = 'commonsCount';
 		const STORAGE_KEY_START_TIME = 'killStartTime';
+		const STORAGE_KEY_PAUSED = 'sessionPaused';
+		const STORAGE_KEY_PAUSE_STARTED = 'pauseStartedAt';
 		const STORAGE_KEY_KILL_TIMESTAMPS = 'killTimestamps';
 		const RATE_WINDOWS_MIN = [5, 10, 15, 30, 45, 60];
 		const RATE_WINDOWS_MS = RATE_WINDOWS_MIN.map(m => m * 60 * 1000);
@@ -666,6 +721,8 @@
 		let coins = loadCount(STORAGE_KEY_COINS);
 		let commons = loadCount(STORAGE_KEY_COMMONS);
 		let startTime = loadTime(STORAGE_KEY_START_TIME);
+		let isPaused = localStorage.getItem(STORAGE_KEY_PAUSED) === '1';
+		let pauseStartedAt = loadTime(STORAGE_KEY_PAUSE_STARTED);
 		let killTimestamps = loadTimestamps();
 		let tickHandle = null;
 
@@ -684,6 +741,7 @@
 		const coinsMinusBtn = document.getElementById('coinsMinusBtn');
 		const commonsPlusBtn = document.getElementById('commonsPlusBtn');
 		const commonsMinusBtn = document.getElementById('commonsMinusBtn');
+		const pauseBtn = document.getElementById('pauseBtn');
 		const resetBtn = document.getElementById('resetBtn');
 		const newSessionBtn = document.getElementById('newSessionBtn');
 		const resetModal = document.getElementById('resetModal');
@@ -739,7 +797,7 @@
 		}
 
 		function updateRates() {
-			const now = Date.now();
+			const now = isPaused && pauseStartedAt !== null ? pauseStartedAt : Date.now();
 			RATE_WINDOWS_MS.forEach((windowMs, i) => {
 				const cutoff = now - windowMs;
 				let c = 0;
@@ -781,17 +839,25 @@
 		function updateStats() {
 			updateRates();
 
+			mainBtn.disabled = isPaused;
+			pauseBtn.disabled = (startTime === null || count < 1) && !isPaused;
+			pauseBtn.textContent = isPaused ? 'RESUME' : 'PAUSE';
+			pauseBtn.classList.toggle('active', isPaused);
+
 			if (startTime === null || count < 1) {
 				timerDisplay.textContent = 'Ready';
 				timerDisplay.classList.add('idle');
+				timerDisplay.classList.remove('paused');
 				avgDisplay.textContent = '—';
 				avgDisplay.classList.add('idle');
 				return;
 			}
 
-			const elapsed = Date.now() - startTime;
-			timerDisplay.textContent = formatDuration(elapsed);
+			const now = isPaused && pauseStartedAt !== null ? pauseStartedAt : Date.now();
+			const elapsed = now - startTime;
+			timerDisplay.textContent = (isPaused ? '⏸ ' : '') + formatDuration(elapsed);
 			timerDisplay.classList.remove('idle');
+			timerDisplay.classList.toggle('paused', isPaused);
 
 			if (count >= 2) {
 				const avg = elapsed / (count - 1);
@@ -801,6 +867,28 @@
 				avgDisplay.textContent = 'First kill!';
 				avgDisplay.classList.add('idle');
 			}
+		}
+
+		function togglePause() {
+			if (startTime === null || count < 1) return;
+
+			if (isPaused) {
+				const pauseDuration = pauseStartedAt !== null ? Date.now() - pauseStartedAt : 0;
+				startTime += pauseDuration;
+				saveTime(STORAGE_KEY_START_TIME, startTime);
+				isPaused = false;
+				pauseStartedAt = null;
+				localStorage.setItem(STORAGE_KEY_PAUSED, '0');
+				saveTime(STORAGE_KEY_PAUSE_STARTED, null);
+				startTicking();
+			} else {
+				isPaused = true;
+				pauseStartedAt = Date.now();
+				localStorage.setItem(STORAGE_KEY_PAUSED, '1');
+				saveTime(STORAGE_KEY_PAUSE_STARTED, pauseStartedAt);
+				stopTicking();
+			}
+			updateStats();
 		}
 
 		function startTicking() {
@@ -816,6 +904,7 @@
 		}
 
 		function incrementMonsters() {
+			if (isPaused) return;
 			if (count === 0) {
 				startTime = Date.now();
 				saveTime(STORAGE_KEY_START_TIME, startTime);
@@ -838,6 +927,10 @@
 				if (count === 0) {
 					startTime = null;
 					saveTime(STORAGE_KEY_START_TIME, null);
+					isPaused = false;
+					pauseStartedAt = null;
+					localStorage.setItem(STORAGE_KEY_PAUSED, '0');
+					saveTime(STORAGE_KEY_PAUSE_STARTED, null);
 					stopTicking();
 				}
 				updateDisplay();
@@ -897,9 +990,13 @@
 		function performReset() {
 			count = 0;
 			startTime = null;
+			isPaused = false;
+			pauseStartedAt = null;
 			killTimestamps = [];
 			saveCount(STORAGE_KEY_MONSTERS, count);
 			saveTime(STORAGE_KEY_START_TIME, null);
+			localStorage.setItem(STORAGE_KEY_PAUSED, '0');
+			saveTime(STORAGE_KEY_PAUSE_STARTED, null);
 			saveTimestamps();
 			stopTicking();
 			updateDisplay();
@@ -911,7 +1008,8 @@
 			document.getElementById('lastEpics').textContent = epics;
 			document.getElementById('lastCoins').textContent = coins;
 			document.getElementById('lastCommons').textContent = commons;
-			const elapsed = startTime !== null ? Date.now() - startTime : 0;
+			const now = isPaused && pauseStartedAt !== null ? pauseStartedAt : Date.now();
+			const elapsed = startTime !== null ? now - startTime : 0;
 			document.getElementById('lastTime').textContent = startTime !== null ? formatDuration(elapsed) : '—';
 			document.getElementById('lastAvg').textContent = (startTime !== null && count >= 2) ? formatAvg(elapsed / (count - 1)) : '—';
 			newSessionModal.classList.add('active');
@@ -922,7 +1020,8 @@
 		}
 
 		function performNewSession() {
-			const elapsed = startTime !== null ? Date.now() - startTime : 0;
+			const now = isPaused && pauseStartedAt !== null ? pauseStartedAt : Date.now();
+			const elapsed = startTime !== null ? now - startTime : 0;
 			saveCount(STORAGE_KEY_LAST_MONSTERS, count);
 			saveCount(STORAGE_KEY_LAST_EPICS, epics);
 			saveCount(STORAGE_KEY_LAST_COINS, coins);
@@ -934,12 +1033,16 @@
 			coins = 0;
 			commons = 0;
 			startTime = null;
+			isPaused = false;
+			pauseStartedAt = null;
 			killTimestamps = [];
 			saveCount(STORAGE_KEY_MONSTERS, count);
 			saveCount(STORAGE_KEY_EPICS, epics);
 			saveCount(STORAGE_KEY_COINS, coins);
 			saveCount(STORAGE_KEY_COMMONS, commons);
 			saveTime(STORAGE_KEY_START_TIME, null);
+			localStorage.setItem(STORAGE_KEY_PAUSED, '0');
+			saveTime(STORAGE_KEY_PAUSE_STARTED, null);
 			saveTimestamps();
 			stopTicking();
 			updateDisplay();
@@ -954,6 +1057,7 @@
 		coinsMinusBtn.addEventListener('click', decrementCoins);
 		commonsPlusBtn.addEventListener('click', incrementCommons);
 		commonsMinusBtn.addEventListener('click', decrementCommons);
+		pauseBtn.addEventListener('click', togglePause);
 		resetBtn.addEventListener('click', openResetModal);
 		newSessionBtn.addEventListener('click', openNewSessionModal);
 		cancelBtn.addEventListener('click', closeResetModal);
@@ -978,7 +1082,7 @@
 		trimTimestamps();
 		saveTimestamps();
 		updateDisplay();
-		if (startTime !== null && count > 0) {
+		if (startTime !== null && count > 0 && !isPaused) {
 			startTicking();
 		}
 
