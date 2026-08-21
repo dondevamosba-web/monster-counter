@@ -8,7 +8,6 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<meta name="apple-mobile-web-app-title" content="Monster Counter">
-	<link rel="manifest" href="manifest.json">
 	<style>
 		* {
 			margin: 0;
@@ -19,10 +18,32 @@
 			user-select: none;
 		}
 
+		:root {
+			--bg: #1a1a1a;
+			--panel: #2a2a2a;
+			--btn: #333;
+			--btn-active: #444;
+			--text: #fff;
+			--text-dim: #888;
+			--text-dimmer: #666;
+			--accent: #2a7f62;
+			--accent-dark: #1d5a47;
+			--accent-glow: rgba(42, 127, 98, 0.3);
+			--session: #1a5c3f;
+			--session-active: #0d3a25;
+			--danger: #d32f2f;
+			--danger-active: #b71c1c;
+			--timer: #d4a72c;
+		}
+
+		html, body {
+			background: var(--bg);
+		}
+
 		body {
-			background: #1a1a1a;
-			color: #fff;
+			color: var(--text);
 			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			font-variant-numeric: tabular-nums;
 			overflow: hidden;
 			width: 100%;
 			height: 100vh;
@@ -33,6 +54,10 @@
 			position: fixed;
 			top: 0;
 			left: 0;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			* { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 		}
 
 		.container {
@@ -59,14 +84,18 @@
 			flex-shrink: 0;
 		}
 
-		.header-right {
-			display: flex;
-			gap: 16px;
-			flex: 1;
-			justify-content: flex-end;
+		.resource-row {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 10px;
+			width: 100%;
+			max-width: 400px;
 		}
 
 		.mini-counter {
+			background: var(--panel);
+			border-radius: 12px;
+			padding: 10px 6px;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -77,33 +106,33 @@
 			font-size: 10px;
 			letter-spacing: 1px;
 			font-weight: 600;
-			color: #666;
+			color: var(--text-dimmer);
 			text-transform: uppercase;
 			white-space: nowrap;
 		}
 
 		.mini-count {
-			font-size: 18px;
+			font-size: 32px;
 			font-weight: 700;
-			color: #fff;
+			color: var(--text);
 			min-width: 32px;
 			text-align: center;
 		}
 
 		.mini-buttons {
 			display: flex;
-			gap: 4px;
+			gap: 6px;
 		}
 
 		.mini-btn {
-			background: #333;
+			background: var(--btn);
 			border: none;
-			color: #fff;
-			font-size: 12px;
+			color: var(--text);
+			font-size: 14px;
 			font-weight: 600;
-			width: 24px;
-			height: 24px;
-			border-radius: 4px;
+			width: 30px;
+			height: 30px;
+			border-radius: 6px;
 			cursor: pointer;
 			display: flex;
 			align-items: center;
@@ -112,14 +141,14 @@
 		}
 
 		.mini-btn:active {
-			background: #444;
+			background: var(--btn-active);
 			transform: scale(0.9);
 		}
 
 		.decrement-btn {
-			background: #333;
+			background: var(--btn);
 			border: none;
-			color: #fff;
+			color: var(--text);
 			font-size: 28px;
 			font-weight: 600;
 			width: 50px;
@@ -130,36 +159,107 @@
 			align-items: center;
 			justify-content: center;
 			transition: all 0.1s ease;
-			active-opacity: 0.8;
 		}
 
 		.decrement-btn:active {
-			background: #444;
+			background: var(--btn-active);
 			transform: scale(0.95);
 		}
 
 		.counter-display {
-			flex: 1;
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
 			align-items: center;
-			gap: 16px;
+			gap: 10px;
 		}
 
 		.label {
 			font-size: 14px;
 			letter-spacing: 2px;
 			font-weight: 600;
-			color: #888;
+			color: var(--text-dim);
 			text-transform: uppercase;
 		}
 
 		.count {
-			font-size: 96px;
+			font-size: 88px;
 			font-weight: 700;
 			line-height: 1;
-			color: #fff;
+			color: var(--text);
+		}
+
+		.stats-row {
+			display: flex;
+			gap: 12px;
+			width: 100%;
+			max-width: 340px;
+		}
+
+		.stat {
+			flex: 1;
+			background: var(--panel);
+			border-radius: 12px;
+			padding: 10px 8px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 4px;
+		}
+
+		.stat-label {
+			font-size: 10px;
+			letter-spacing: 1.5px;
+			font-weight: 700;
+			color: var(--text-dimmer);
+			text-transform: uppercase;
+		}
+
+		.stat-value {
+			font-size: 26px;
+			font-weight: 700;
+			color: var(--timer);
+			line-height: 1.1;
+		}
+
+		.stat-value.idle {
+			color: var(--text-dim);
+			font-size: 20px;
+			font-weight: 600;
+		}
+
+		.rate-row {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 6px 8px;
+			width: 100%;
+			max-width: 340px;
+		}
+
+		.rate-stat {
+			flex: 1;
+			background: var(--panel);
+			border-radius: 10px;
+			padding: 6px 4px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 2px;
+		}
+
+		.rate-label {
+			font-size: 9px;
+			letter-spacing: 1px;
+			font-weight: 700;
+			color: var(--text-dimmer);
+			text-transform: uppercase;
+		}
+
+		.rate-value {
+			font-size: 18px;
+			font-weight: 700;
+			color: var(--text);
+			line-height: 1.1;
 		}
 
 		.main-button-container {
@@ -169,17 +269,17 @@
 		}
 
 		.main-btn {
-			width: 220px;
-			height: 220px;
+			width: 210px;
+			height: 210px;
 			border-radius: 50%;
-			background: linear-gradient(135deg, #2a7f62 0%, #1d5a47 100%);
+			background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
 			border: none;
-			color: #fff;
+			color: var(--text);
 			font-size: 42px;
 			font-weight: 700;
 			cursor: pointer;
 			transition: all 0.05s ease;
-			box-shadow: 0 8px 24px rgba(42, 127, 98, 0.3);
+			box-shadow: 0 8px 24px var(--accent-glow);
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -188,11 +288,7 @@
 
 		.main-btn:active {
 			transform: scale(0.95);
-			box-shadow: 0 4px 12px rgba(42, 127, 98, 0.4);
-		}
-
-		.main-btn:disabled {
-			opacity: 0.5;
+			box-shadow: 0 4px 12px var(--accent-glow);
 		}
 
 		.footer {
@@ -201,9 +297,9 @@
 		}
 
 		.reset-btn {
-			background: #333;
+			background: var(--btn);
 			border: none;
-			color: #fff;
+			color: var(--text);
 			font-size: 16px;
 			font-weight: 600;
 			padding: 12px 32px;
@@ -214,16 +310,16 @@
 		}
 
 		.reset-btn:active {
-			background: #444;
+			background: var(--btn-active);
 			transform: scale(0.95);
 		}
 
 		.new-session-btn {
-			background: #1a5c3f;
+			background: var(--session);
 		}
 
 		.new-session-btn:active {
-			background: #0d3a25;
+			background: var(--session-active);
 		}
 
 		/* Modal Styles */
@@ -245,7 +341,7 @@
 		}
 
 		.modal {
-			background: #2a2a2a;
+			background: var(--panel);
 			border-radius: 16px;
 			padding: 32px 24px;
 			text-align: center;
@@ -267,8 +363,8 @@
 		.modal-title {
 			font-size: 18px;
 			font-weight: 600;
-			margin-bottom: 24px;
-			color: #fff;
+			margin-bottom: 20px;
+			color: var(--text);
 		}
 
 		.modal-buttons {
@@ -288,9 +384,18 @@
 			transition: all 0.1s ease;
 		}
 
+		.modal-btn:focus-visible,
+		.mini-btn:focus-visible,
+		.decrement-btn:focus-visible,
+		.main-btn:focus-visible,
+		.reset-btn:focus-visible {
+			outline: 2px solid var(--timer);
+			outline-offset: 2px;
+		}
+
 		.modal-btn.cancel {
-			background: #444;
-			color: #fff;
+			background: var(--btn-active);
+			color: var(--text);
 		}
 
 		.modal-btn.cancel:active {
@@ -299,13 +404,27 @@
 		}
 
 		.modal-btn.confirm {
-			background: #d32f2f;
-			color: #fff;
+			background: var(--danger);
+			color: var(--text);
 		}
 
 		.modal-btn.confirm:active {
-			background: #b71c1c;
+			background: var(--danger-active);
 			transform: scale(0.95);
+		}
+
+		.session-summary {
+			text-align: left;
+			margin: 18px 0;
+			font-size: 13px;
+			color: #aaa;
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.session-summary strong {
+			color: var(--text);
 		}
 
 		/* Prevent double-tap zoom */
@@ -322,16 +441,19 @@
 				padding-top: max(10px, env(safe-area-inset-top));
 				padding-bottom: max(10px, env(safe-area-inset-bottom));
 				justify-content: flex-start;
-				gap: 16px;
+				gap: 10px;
 			}
 
 			.header {
-				margin-top: 6px;
+				margin-top: 4px;
+			}
+
+			.resource-row {
+				gap: 6px;
 			}
 
 			.counter-display {
-				gap: 4px;
-				flex: 0 0 auto;
+				gap: 6px;
 			}
 
 			.label {
@@ -339,43 +461,71 @@
 			}
 
 			.count {
-				font-size: 50px;
+				font-size: 40px;
 			}
 
-			.main-button-container {
-				flex: 0 0 auto;
+			.stats-row {
+				max-width: 100%;
+			}
+
+			.stat {
+				padding: 6px 6px;
+			}
+
+			.stat-value {
+				font-size: 20px;
+			}
+
+			.stat-value.idle {
+				font-size: 15px;
+			}
+
+			.rate-row {
+				max-width: 100%;
+				gap: 5px 6px;
+			}
+
+			.rate-stat {
+				padding: 5px 3px;
 			}
 
 			.main-btn {
-				width: 165px;
-				height: 165px;
-				font-size: 30px;
+				width: 130px;
+				height: 130px;
+				font-size: 24px;
 			}
 
 			.mini-label {
-				font-size: 11px;
+				font-size: 10px;
 			}
 
 			.mini-count {
 				font-size: 28px;
-				min-width: 40px;
+				min-width: 32px;
 			}
 
 			.mini-btn {
-				width: 28px;
-				height: 28px;
-				font-size: 14px;
+				width: 26px;
+				height: 26px;
+				font-size: 13px;
 			}
 
 			.footer {
 				gap: 8px;
-				margin-top: 8px;
+				margin-top: 4px;
 			}
 
 			.reset-btn {
-				padding: 10px 18px;
-				font-size: 13px;
+				padding: 9px 16px;
+				font-size: 12px;
 			}
+		}
+
+		@media (max-height: 700px) {
+			.stat-value { font-size: 18px; }
+			.main-btn { width: 115px; height: 115px; font-size: 22px; }
+			.count { font-size: 34px; }
+			.mini-count { font-size: 24px; }
 		}
 	</style>
 </head>
@@ -385,22 +535,31 @@
 			<div class="header-left">
 				<button class="decrement-btn" id="decrementBtn" aria-label="Decrease count by 1">−1</button>
 			</div>
-			<div class="header-right">
-				<div class="mini-counter">
-					<div class="mini-label">Epic Drops</div>
-					<div class="mini-count" id="epicsCount">0</div>
-					<div class="mini-buttons">
-						<button class="mini-btn" id="epicsMinusBtn">−</button>
-						<button class="mini-btn" id="epicsPlusBtn">+</button>
-					</div>
+		</div>
+
+		<div class="resource-row">
+			<div class="mini-counter">
+				<div class="mini-label">Epic Drops</div>
+				<div class="mini-count" id="epicsCount">0</div>
+				<div class="mini-buttons">
+					<button class="mini-btn" id="epicsMinusBtn" aria-label="Decrease epic drops">−</button>
+					<button class="mini-btn" id="epicsPlusBtn" aria-label="Increase epic drops">+</button>
 				</div>
-				<div class="mini-counter">
-					<div class="mini-label">Coins</div>
-					<div class="mini-count" id="coinsCount">0</div>
-					<div class="mini-buttons">
-						<button class="mini-btn" id="coinsMinusBtn">−</button>
-						<button class="mini-btn" id="coinsPlusBtn">+</button>
-					</div>
+			</div>
+			<div class="mini-counter">
+				<div class="mini-label">Coins</div>
+				<div class="mini-count" id="coinsCount">0</div>
+				<div class="mini-buttons">
+					<button class="mini-btn" id="coinsMinusBtn" aria-label="Decrease coins">−</button>
+					<button class="mini-btn" id="coinsPlusBtn" aria-label="Increase coins">+</button>
+				</div>
+			</div>
+			<div class="mini-counter">
+				<div class="mini-label">Common Drops</div>
+				<div class="mini-count" id="commonsCount">0</div>
+				<div class="mini-buttons">
+					<button class="mini-btn" id="commonsMinusBtn" aria-label="Decrease common drops">−</button>
+					<button class="mini-btn" id="commonsPlusBtn" aria-label="Increase common drops">+</button>
 				</div>
 			</div>
 		</div>
@@ -408,10 +567,46 @@
 		<div class="counter-display">
 			<div class="label">Monsters Killed</div>
 			<div class="count" id="counter">0</div>
+			<div class="stats-row">
+				<div class="stat">
+					<div class="stat-label">Timer</div>
+					<div class="stat-value idle" id="timerDisplay">Ready</div>
+				</div>
+				<div class="stat">
+					<div class="stat-label">Avg Kill Time</div>
+					<div class="stat-value idle" id="avgDisplay">—</div>
+				</div>
+			</div>
+			<div class="rate-row">
+				<div class="rate-stat">
+					<div class="rate-label">Last 5m</div>
+					<div class="rate-value" id="rate5Display">0</div>
+				</div>
+				<div class="rate-stat">
+					<div class="rate-label">Last 10m</div>
+					<div class="rate-value" id="rate10Display">0</div>
+				</div>
+				<div class="rate-stat">
+					<div class="rate-label">Last 15m</div>
+					<div class="rate-value" id="rate15Display">0</div>
+				</div>
+				<div class="rate-stat">
+					<div class="rate-label">Last 30m</div>
+					<div class="rate-value" id="rate30Display">0</div>
+				</div>
+				<div class="rate-stat">
+					<div class="rate-label">Last 45m</div>
+					<div class="rate-value" id="rate45Display">0</div>
+				</div>
+				<div class="rate-stat">
+					<div class="rate-label">Last 60m</div>
+					<div class="rate-value" id="rate60Display">0</div>
+				</div>
+			</div>
 		</div>
 
 		<div class="main-button-container">
-			<button class="main-btn" id="mainBtn" aria-label="Increase count by 1">TAP</button>
+			<button class="main-btn" id="mainBtn" aria-label="Register a kill">TAP</button>
 		</div>
 
 		<div class="footer">
@@ -433,11 +628,14 @@
 	<div class="modal-overlay" id="newSessionModal">
 		<div class="modal">
 			<div class="modal-title">Start New Session?</div>
-			<div style="text-align: left; margin: 20px 0; font-size: 13px; color: #aaa;">
-				<div style="margin-bottom: 10px;"><strong>Last Session:</strong></div>
+			<div class="session-summary">
+				<div><strong>Last Session:</strong></div>
 				<div>⚔ Monsters: <span id="lastMonsters">0</span></div>
 				<div>✨ Epic Drops: <span id="lastEpics">0</span></div>
 				<div>💰 Coins: <span id="lastCoins">0</span></div>
+				<div>🎁 Common Drops: <span id="lastCommons">0</span></div>
+				<div>⏱ Total Time: <span id="lastTime">—</span></div>
+				<div>⚡ Avg Kill Time: <span id="lastAvg">—</span></div>
 			</div>
 			<div class="modal-buttons">
 				<button class="modal-btn cancel" id="cancelNewSessionBtn">Cancel</button>
@@ -450,24 +648,42 @@
 		const STORAGE_KEY_MONSTERS = 'monsterCount';
 		const STORAGE_KEY_EPICS = 'epicsCount';
 		const STORAGE_KEY_COINS = 'coinsCount';
+		const STORAGE_KEY_COMMONS = 'commonsCount';
+		const STORAGE_KEY_START_TIME = 'killStartTime';
+		const STORAGE_KEY_KILL_TIMESTAMPS = 'killTimestamps';
+		const RATE_WINDOWS_MIN = [5, 10, 15, 30, 45, 60];
+		const RATE_WINDOWS_MS = RATE_WINDOWS_MIN.map(m => m * 60 * 1000);
 		const STORAGE_KEY_LAST_MONSTERS = 'lastMonsters';
 		const STORAGE_KEY_LAST_EPICS = 'lastEpics';
 		const STORAGE_KEY_LAST_COINS = 'lastCoins';
+		const STORAGE_KEY_LAST_COMMONS = 'lastCommons';
+		const STORAGE_KEY_LAST_TIME = 'lastTime';
+		const STORAGE_KEY_LAST_AVG = 'lastAvg';
 		const DEFAULT_COUNT = 0;
 
 		let count = loadCount(STORAGE_KEY_MONSTERS);
 		let epics = loadCount(STORAGE_KEY_EPICS);
 		let coins = loadCount(STORAGE_KEY_COINS);
+		let commons = loadCount(STORAGE_KEY_COMMONS);
+		let startTime = loadTime(STORAGE_KEY_START_TIME);
+		let killTimestamps = loadTimestamps();
+		let tickHandle = null;
 
 		const counterDisplay = document.getElementById('counter');
 		const epicsDisplay = document.getElementById('epicsCount');
 		const coinsDisplay = document.getElementById('coinsCount');
+		const commonsDisplay = document.getElementById('commonsCount');
+		const timerDisplay = document.getElementById('timerDisplay');
+		const avgDisplay = document.getElementById('avgDisplay');
+		const rateDisplays = RATE_WINDOWS_MIN.map(m => document.getElementById(`rate${m}Display`));
 		const mainBtn = document.getElementById('mainBtn');
 		const decrementBtn = document.getElementById('decrementBtn');
 		const epicsPlusBtn = document.getElementById('epicsPlusBtn');
 		const epicsMinusBtn = document.getElementById('epicsMinusBtn');
 		const coinsPlusBtn = document.getElementById('coinsPlusBtn');
 		const coinsMinusBtn = document.getElementById('coinsMinusBtn');
+		const commonsPlusBtn = document.getElementById('commonsPlusBtn');
+		const commonsMinusBtn = document.getElementById('commonsMinusBtn');
 		const resetBtn = document.getElementById('resetBtn');
 		const newSessionBtn = document.getElementById('newSessionBtn');
 		const resetModal = document.getElementById('resetModal');
@@ -483,18 +699,133 @@
 		}
 
 		function saveCount(key, value) {
-			localStorage.setItem(key, value.toString());
+			try { localStorage.setItem(key, value.toString()); } catch (e) {}
+		}
+
+		function loadTime(key) {
+			const stored = localStorage.getItem(key);
+			return stored !== null ? parseInt(stored, 10) : null;
+		}
+
+		function saveTime(key, value) {
+			try {
+				if (value === null) {
+					localStorage.removeItem(key);
+				} else {
+					localStorage.setItem(key, value.toString());
+				}
+			} catch (e) {}
+		}
+
+		function loadTimestamps() {
+			try {
+				const stored = localStorage.getItem(STORAGE_KEY_KILL_TIMESTAMPS);
+				const arr = stored !== null ? JSON.parse(stored) : [];
+				return Array.isArray(arr) ? arr : [];
+			} catch (e) {
+				return [];
+			}
+		}
+
+		function saveTimestamps() {
+			try { localStorage.setItem(STORAGE_KEY_KILL_TIMESTAMPS, JSON.stringify(killTimestamps)); } catch (e) {}
+		}
+
+		function trimTimestamps() {
+			const cutoff = Date.now() - RATE_WINDOWS_MS[RATE_WINDOWS_MS.length - 1];
+			while (killTimestamps.length > 0 && killTimestamps[0] < cutoff) {
+				killTimestamps.shift();
+			}
+		}
+
+		function updateRates() {
+			const now = Date.now();
+			RATE_WINDOWS_MS.forEach((windowMs, i) => {
+				const cutoff = now - windowMs;
+				let c = 0;
+				for (let j = killTimestamps.length - 1; j >= 0; j--) {
+					if (killTimestamps[j] >= cutoff) c++;
+					else break;
+				}
+				rateDisplays[i].textContent = c;
+			});
+		}
+
+		function formatDuration(ms) {
+			const totalSeconds = Math.floor(ms / 1000);
+			const h = Math.floor(totalSeconds / 3600);
+			const m = Math.floor((totalSeconds % 3600) / 60);
+			const s = totalSeconds % 60;
+			const pad = n => n.toString().padStart(2, '0');
+			return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+		}
+
+		function formatAvg(ms) {
+			const totalSeconds = ms / 1000;
+			if (totalSeconds < 60) {
+				return `${totalSeconds.toFixed(1)}s`;
+			}
+			const m = Math.floor(totalSeconds / 60);
+			const s = Math.round(totalSeconds % 60);
+			return `${m}m ${s}s`;
 		}
 
 		function updateDisplay() {
 			counterDisplay.textContent = count;
 			epicsDisplay.textContent = epics;
 			coinsDisplay.textContent = coins;
+			commonsDisplay.textContent = commons;
+			updateStats();
+		}
+
+		function updateStats() {
+			updateRates();
+
+			if (startTime === null || count < 1) {
+				timerDisplay.textContent = 'Ready';
+				timerDisplay.classList.add('idle');
+				avgDisplay.textContent = '—';
+				avgDisplay.classList.add('idle');
+				return;
+			}
+
+			const elapsed = Date.now() - startTime;
+			timerDisplay.textContent = formatDuration(elapsed);
+			timerDisplay.classList.remove('idle');
+
+			if (count >= 2) {
+				const avg = elapsed / (count - 1);
+				avgDisplay.textContent = formatAvg(avg);
+				avgDisplay.classList.remove('idle');
+			} else {
+				avgDisplay.textContent = 'First kill!';
+				avgDisplay.classList.add('idle');
+			}
+		}
+
+		function startTicking() {
+			if (tickHandle !== null) return;
+			tickHandle = setInterval(updateStats, 250);
+		}
+
+		function stopTicking() {
+			if (tickHandle !== null) {
+				clearInterval(tickHandle);
+				tickHandle = null;
+			}
 		}
 
 		function incrementMonsters() {
+			if (count === 0) {
+				startTime = Date.now();
+				saveTime(STORAGE_KEY_START_TIME, startTime);
+				startTicking();
+			}
 			count++;
 			saveCount(STORAGE_KEY_MONSTERS, count);
+			killTimestamps.push(Date.now());
+			trimTimestamps();
+			saveTimestamps();
 			updateDisplay();
 		}
 
@@ -502,6 +833,13 @@
 			if (count > 0) {
 				count--;
 				saveCount(STORAGE_KEY_MONSTERS, count);
+				killTimestamps.pop();
+				saveTimestamps();
+				if (count === 0) {
+					startTime = null;
+					saveTime(STORAGE_KEY_START_TIME, null);
+					stopTicking();
+				}
 				updateDisplay();
 			}
 		}
@@ -534,6 +872,20 @@
 			}
 		}
 
+		function incrementCommons() {
+			commons++;
+			saveCount(STORAGE_KEY_COMMONS, commons);
+			updateDisplay();
+		}
+
+		function decrementCommons() {
+			if (commons > 0) {
+				commons--;
+				saveCount(STORAGE_KEY_COMMONS, commons);
+				updateDisplay();
+			}
+		}
+
 		function openResetModal() {
 			resetModal.classList.add('active');
 		}
@@ -544,7 +896,12 @@
 
 		function performReset() {
 			count = 0;
+			startTime = null;
+			killTimestamps = [];
 			saveCount(STORAGE_KEY_MONSTERS, count);
+			saveTime(STORAGE_KEY_START_TIME, null);
+			saveTimestamps();
+			stopTicking();
 			updateDisplay();
 			closeResetModal();
 		}
@@ -553,6 +910,10 @@
 			document.getElementById('lastMonsters').textContent = count;
 			document.getElementById('lastEpics').textContent = epics;
 			document.getElementById('lastCoins').textContent = coins;
+			document.getElementById('lastCommons').textContent = commons;
+			const elapsed = startTime !== null ? Date.now() - startTime : 0;
+			document.getElementById('lastTime').textContent = startTime !== null ? formatDuration(elapsed) : '—';
+			document.getElementById('lastAvg').textContent = (startTime !== null && count >= 2) ? formatAvg(elapsed / (count - 1)) : '—';
 			newSessionModal.classList.add('active');
 		}
 
@@ -561,15 +922,26 @@
 		}
 
 		function performNewSession() {
+			const elapsed = startTime !== null ? Date.now() - startTime : 0;
 			saveCount(STORAGE_KEY_LAST_MONSTERS, count);
 			saveCount(STORAGE_KEY_LAST_EPICS, epics);
 			saveCount(STORAGE_KEY_LAST_COINS, coins);
+			saveCount(STORAGE_KEY_LAST_COMMONS, commons);
+			saveTime(STORAGE_KEY_LAST_TIME, startTime !== null ? elapsed : null);
+			saveCount(STORAGE_KEY_LAST_AVG, (startTime !== null && count >= 2) ? Math.round(elapsed / (count - 1)) : 0);
 			count = 0;
 			epics = 0;
 			coins = 0;
+			commons = 0;
+			startTime = null;
+			killTimestamps = [];
 			saveCount(STORAGE_KEY_MONSTERS, count);
 			saveCount(STORAGE_KEY_EPICS, epics);
 			saveCount(STORAGE_KEY_COINS, coins);
+			saveCount(STORAGE_KEY_COMMONS, commons);
+			saveTime(STORAGE_KEY_START_TIME, null);
+			saveTimestamps();
+			stopTicking();
 			updateDisplay();
 			closeNewSessionModal();
 		}
@@ -580,6 +952,8 @@
 		epicsMinusBtn.addEventListener('click', decrementEpics);
 		coinsPlusBtn.addEventListener('click', incrementCoins);
 		coinsMinusBtn.addEventListener('click', decrementCoins);
+		commonsPlusBtn.addEventListener('click', incrementCommons);
+		commonsMinusBtn.addEventListener('click', decrementCommons);
 		resetBtn.addEventListener('click', openResetModal);
 		newSessionBtn.addEventListener('click', openNewSessionModal);
 		cancelBtn.addEventListener('click', closeResetModal);
@@ -600,8 +974,13 @@
 			}
 		});
 
-		// Initialize display
+		// Initialize display and resume timer if a session was already running
+		trimTimestamps();
+		saveTimestamps();
 		updateDisplay();
+		if (startTime !== null && count > 0) {
+			startTicking();
+		}
 
 		// Disable scrolling and zooming
 		document.addEventListener('touchmove', function (e) {
