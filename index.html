@@ -49,6 +49,7 @@
 			overflow: hidden;
 			width: 100%;
 			height: 100vh;
+			height: 100dvh;
 			display: flex;
 			flex-direction: column;
 			justify-content: center;
@@ -264,10 +265,21 @@
 			line-height: 1.1;
 		}
 
-		.main-button-container {
+		.action-row {
 			display: flex;
+			align-items: stretch;
 			justify-content: center;
-			align-items: center;
+			gap: 10px;
+			width: 100%;
+			max-width: 460px;
+		}
+
+		.side-col {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			flex: 1;
+			min-width: 0;
 		}
 
 		.main-btn {
@@ -301,26 +313,25 @@
 			color: var(--pause);
 		}
 
-		.footer {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 12px;
-			justify-content: center;
-		}
-
 		.reset-btn {
-			flex: 1 1 0;
-			min-width: 100px;
+			flex: 1;
+			width: 100%;
+			min-height: 44px;
 			background: var(--btn);
 			border: none;
 			color: var(--text);
-			font-size: 16px;
-			font-weight: 600;
-			padding: 14px 20px;
-			border-radius: 10px;
+			font-size: 13px;
+			font-weight: 700;
+			padding: 6px 6px;
+			border-radius: 12px;
 			cursor: pointer;
 			transition: all 0.1s ease;
-			letter-spacing: 1px;
+			letter-spacing: 0.5px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			line-height: 1.15;
 		}
 
 		.reset-btn:active {
@@ -540,9 +551,10 @@
 			}
 
 			.main-btn {
-				width: 175px;
-				height: 175px;
-				font-size: 32px;
+				width: 150px;
+				height: 150px;
+				font-size: 28px;
+				flex-shrink: 0;
 			}
 
 			.mini-label {
@@ -560,23 +572,26 @@
 				font-size: 15px;
 			}
 
-			.footer {
-				gap: 10px;
+			.action-row {
+				gap: 8px;
 				margin-top: 4px;
-				width: 100%;
+			}
+
+			.side-col {
+				gap: 6px;
 			}
 
 			.reset-btn {
-				padding: 14px 16px;
-				font-size: 14px;
+				padding: 4px 4px;
+				font-size: 11px;
 			}
 		}
 
 		@media (max-height: 700px) {
-			.container { justify-content: flex-start; gap: 10px; }
+			.container { justify-content: flex-start; gap: 8px; }
 			.stat-value { font-size: 20px; }
-			.main-btn { width: 135px; height: 135px; font-size: 26px; }
-			.count { font-size: 42px; }
+			.main-btn { width: 120px; height: 120px; font-size: 24px; }
+			.count { font-size: 38px; }
 			.mini-count { font-size: 26px; }
 		}
 	</style>
@@ -657,14 +672,13 @@
 			</div>
 		</div>
 
-		<div class="main-button-container">
-			<button class="main-btn" id="mainBtn" aria-label="Register a kill">TAP</button>
-		</div>
-
-		<div class="footer">
+		<div class="action-row">
 			<button class="reset-btn pause-btn" id="pauseBtn">PAUSE</button>
-			<button class="reset-btn" id="resetBtn">RESET</button>
-			<button class="reset-btn new-session-btn" id="newSessionBtn">NEW SESSION</button>
+			<button class="main-btn" id="mainBtn" aria-label="Register a kill">TAP</button>
+			<div class="side-col">
+				<button class="reset-btn" id="resetBtn">RESET</button>
+				<button class="reset-btn new-session-btn" id="newSessionBtn">NEW SESSION</button>
+			</div>
 		</div>
 	</div>
 
@@ -706,6 +720,7 @@
 		const STORAGE_KEY_PAUSED = 'sessionPaused';
 		const STORAGE_KEY_PAUSE_STARTED = 'pauseStartedAt';
 		const STORAGE_KEY_KILL_TIMESTAMPS = 'killTimestamps';
+		const AUTO_PAUSE_MS = 2 * 60 * 1000;
 		const RATE_WINDOWS_MIN = [5, 10, 15, 30, 45, 60];
 		const RATE_WINDOWS_MS = RATE_WINDOWS_MIN.map(m => m * 60 * 1000);
 		const STORAGE_KEY_LAST_MONSTERS = 'lastMonsters';
@@ -839,6 +854,13 @@
 		function updateStats() {
 			updateRates();
 
+			if (!isPaused && startTime !== null && count >= 1) {
+				const lastTap = killTimestamps.length ? killTimestamps[killTimestamps.length - 1] : startTime;
+				if (Date.now() - lastTap >= AUTO_PAUSE_MS) {
+					pauseSession();
+				}
+			}
+
 			mainBtn.disabled = isPaused;
 			pauseBtn.disabled = (startTime === null || count < 1) && !isPaused;
 			pauseBtn.textContent = isPaused ? 'RESUME' : 'PAUSE';
@@ -869,26 +891,36 @@
 			}
 		}
 
+		function pauseSession() {
+			if (startTime === null || count < 1 || isPaused) return;
+			isPaused = true;
+			pauseStartedAt = Date.now();
+			localStorage.setItem(STORAGE_KEY_PAUSED, '1');
+			saveTime(STORAGE_KEY_PAUSE_STARTED, pauseStartedAt);
+			stopTicking();
+			updateStats();
+		}
+
+		function resumeSession() {
+			if (!isPaused) return;
+			const pauseDuration = pauseStartedAt !== null ? Date.now() - pauseStartedAt : 0;
+			startTime += pauseDuration;
+			saveTime(STORAGE_KEY_START_TIME, startTime);
+			isPaused = false;
+			pauseStartedAt = null;
+			localStorage.setItem(STORAGE_KEY_PAUSED, '0');
+			saveTime(STORAGE_KEY_PAUSE_STARTED, null);
+			startTicking();
+			updateStats();
+		}
+
 		function togglePause() {
 			if (startTime === null || count < 1) return;
-
 			if (isPaused) {
-				const pauseDuration = pauseStartedAt !== null ? Date.now() - pauseStartedAt : 0;
-				startTime += pauseDuration;
-				saveTime(STORAGE_KEY_START_TIME, startTime);
-				isPaused = false;
-				pauseStartedAt = null;
-				localStorage.setItem(STORAGE_KEY_PAUSED, '0');
-				saveTime(STORAGE_KEY_PAUSE_STARTED, null);
-				startTicking();
+				resumeSession();
 			} else {
-				isPaused = true;
-				pauseStartedAt = Date.now();
-				localStorage.setItem(STORAGE_KEY_PAUSED, '1');
-				saveTime(STORAGE_KEY_PAUSE_STARTED, pauseStartedAt);
-				stopTicking();
+				pauseSession();
 			}
-			updateStats();
 		}
 
 		function startTicking() {
